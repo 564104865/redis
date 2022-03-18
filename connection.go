@@ -4,6 +4,7 @@ import (
 	"context"
 	goredis "github.com/go-redis/redis/v8"
 	"github.com/goal-web/contracts"
+	"github.com/goal-web/supports/exceptions"
 	"time"
 )
 
@@ -21,12 +22,20 @@ func (this *Connection) Subscribe(channels []string, closure contracts.RedisSubs
 	go func() {
 
 		defer func(pubSub *goredis.PubSub) {
+			if recoverValue := recover(); recoverValue != nil {
+				this.exceptionHandler.Handle(SubscribeException{
+					exceptions.ResolveException(recoverValue), contracts.Fields{
+						"channels": channels,
+					},
+				})
+			}
 			err := pubSub.Close()
 			if err != nil {
-
 				// 处理异常
 				this.exceptionHandler.Handle(SubscribeException{
-					err, nil,
+					err, contracts.Fields{
+						"channels": channels,
+					},
 				})
 			}
 		}(pubSub)
@@ -48,11 +57,20 @@ func (this *Connection) PSubscribe(channels []string, closure contracts.RedisSub
 	go func() {
 
 		defer func(pubSub *goredis.PubSub) {
+			if recoverValue := recover(); recoverValue != nil {
+				this.exceptionHandler.Handle(SubscribeException{
+					exceptions.ResolveException(recoverValue), contracts.Fields{
+						"channels": channels,
+					},
+				})
+			}
 			err := pubSub.Close()
 			if err != nil {
 				// 处理异常
 				this.exceptionHandler.Handle(SubscribeException{
-					err, nil,
+					err, contracts.Fields{
+						"channels": channels,
+					},
 				})
 			}
 		}(pubSub)
@@ -805,11 +823,20 @@ func (this *Connection) SubscribeWithContext(ctx context.Context, channels []str
 	go func() {
 
 		defer func(pubSub *goredis.PubSub) {
+			if recoverValue := recover(); recoverValue != nil {
+				this.exceptionHandler.Handle(SubscribeException{
+					exceptions.ResolveException(recoverValue), contracts.Fields{
+						"channels": channels,
+					},
+				})
+			}
 			err := pubSub.Close()
 			if err != nil {
 				// 处理异常
 				this.exceptionHandler.Handle(SubscribeException{
-					err, nil,
+					err, contracts.Fields{
+						"channels": channels,
+					},
 				})
 			}
 		}(pubSub)
@@ -831,11 +858,20 @@ func (this *Connection) PSubscribeWithContext(ctx context.Context, channels []st
 	go func() {
 
 		defer func(pubSub *goredis.PubSub) {
+			if recoverValue := recover(); recoverValue != nil {
+				this.exceptionHandler.Handle(SubscribeException{
+					exceptions.ResolveException(recoverValue), contracts.Fields{
+						"channels": channels,
+					},
+				})
+			}
 			err := pubSub.Close()
 			if err != nil {
 				// 处理异常
 				this.exceptionHandler.Handle(SubscribeException{
-					err, nil,
+					err, contracts.Fields{
+						"channels": channels,
+					},
 				})
 			}
 		}(pubSub)
@@ -862,7 +898,7 @@ func (this *Connection) PubSubNumSubWithContext(ctx context.Context, channels ..
 }
 
 func (this *Connection) PubSubNumPatWithContext(ctx context.Context) (int64, error) {
-	return this.client.PubSubNumPat(context.Background()).Result()
+	return this.client.PubSubNumPat(ctx).Result()
 }
 
 func (this *Connection) PublishWithContext(ctx context.Context, channel string, message interface{}) (int64, error) {
@@ -938,7 +974,7 @@ func (this *Connection) DelWithContext(ctx context.Context, keys ...string) (int
 }
 
 func (this *Connection) FlushAllWithContext(ctx context.Context) (string, error) {
-	return this.client.FlushAll(context.Background()).Result()
+	return this.client.FlushAll(ctx).Result()
 }
 
 func (this *Connection) FlushDBWithContext(ctx context.Context) (string, error) {
